@@ -12,6 +12,19 @@ import (
 type API struct{ store *Store }
 
 func (api *API) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	if request.URL.Path == "/" {
+		if request.Method != http.MethodGet {
+			writeError(writer, http.StatusMethodNotAllowed, "method not allowed")
+			return
+		}
+		writeJSON(writer, http.StatusOK, map[string]string{
+			"service": "campaign events API",
+			"events":  "POST /events",
+			"stats":   "GET /campaigns/{campaign_id}/stats",
+			"listing": "GET /campaigns/{campaign_id}/events",
+		})
+		return
+	}
 	if request.URL.Path == "/events" {
 		if request.Method != http.MethodPost {
 			writeError(writer, http.StatusMethodNotAllowed, "method not allowed")
