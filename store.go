@@ -48,7 +48,7 @@ func (store *Store) AddBatch(events []Event) (inserted, duplicates int, err erro
 		}
 	}
 	for _, event := range pending {
-		if existing, ok := store.events[event.EventID]; ok {
+		if _, ok := store.events[event.EventID]; ok {
 			duplicates++
 			continue
 		}
