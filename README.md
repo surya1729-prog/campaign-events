@@ -1,75 +1,98 @@
 # Campaign Events Tracking Backend
 
-A small Go HTTP service for ingesting campaign events and reading deduplicated campaign statistics.
+Completed Go backend for Relay campaign event ingestion and campaign statistics.
 
-## Stack and structure
-
-The project uses Go, `net/http`, `encoding/json`, and an in-memory synchronized store. It has no third-party dependencies.
+## Structure
 
 ```text
-models.go       event validation and API models
-store.go        synchronized idempotent storage and aggregation
-handlers.go     HTTP routing and JSON responses
-main.go         server entry point
-main_test.go    API and concurrency tests
-starter/        representative seed data
-debugging/      fixed JSONL debugging exercise
-NOTES.md        decisions and scale/marketing analysis
-BUGS.md         debugging findings
-AI_USAGE.md     honest tool-use record
+ASSIGNMENT.md       supplied assignment
+main.go             completed HTTP server
+handlers.go         routing and JSON handlers
+models.go           event models and validation
+store.go            synchronized in-memory storage
+main_test.go        backend tests
+starter/            supplied starter skeleton and seed data
+debugging/          supplied debugging program with minimal fixes
+NOTES.md            decisions, scale memo, and marketer analysis
+BUGS.md             debugging findings
+AI_USAGE.md         AI disclosure
 ```
 
-## Prerequisites and installation
+## Prerequisites
 
-Install Go 1.22 or newer and ensure `go` is on `PATH`. From the project root:
+Install Go 1.22 or newer and ensure `go` is on `PATH`. No third-party dependencies are required.
 
-```text
-go test ./...
+## Run
+
+From the repository root:
+
+```powershell
 go run .
 ```
 
-The server listens on `http://localhost:8080`.
+The API listens on `http://localhost:8080`. If port 8080 is already in use, use the existing server or stop it with `Ctrl+C` before starting another copy.
 
 ## API
 
-### `POST /events`
+### POST `/events`
 
-Accepts a JSON array. The batch is atomic. Identical replays are counted as duplicates; conflicting reuse of an ID returns `409`.
+Accepts one JSON array of events. Required fields are `event_id`, `campaign_id`, `contact_id`, `type`, and an RFC3339 `timestamp`. Supported types are `sent`, `delivered`, `opened`, and `clicked`; metadata is optional.
 
-```json
-[
-  {"event_id":"evt_00042","campaign_id":"cmp_summer_sale","contact_id":"ct_017","type":"opened","timestamp":"2026-08-10T09:15:04Z","metadata":{"url":"https://example.com/offer"}}
-]
+The batch is atomic: if any event is malformed, invalid, or conflicts with an existing event ID, no new event in that batch is committed. An identical replay returns `201` with `duplicates` and does not change statistics. A conflicting event ID returns `409`.
+
+```powershell
+$body = Get-Content .\starter\seed\events.json -Raw
+Invoke-RestMethod -Uri http://localhost:8080/events -Method Post -ContentType "application/json" -Body $body
 ```
 
-Successful response (`201`): `{"accepted":1,"duplicates":0}`. Invalid JSON or events return `400`; conflicting IDs return `409`.
+Success response:
 
-### `GET /campaigns/{campaign_id}/stats`
+```json
+{"accepted":1,"duplicates":0}
+```
 
-Example: `GET /campaigns/cmp_summer_sale/stats`
+### GET `/campaigns/{campaign_id}/stats`
+
+```text
+http://localhost:8080/campaigns/cmp_summer_sale/stats
+```
+
+Example response:
 
 ```json
 {"campaign_id":"cmp_summer_sale","sent":1,"delivered":1,"opened":1,"clicked":1}
 ```
 
-### `GET /campaigns/{campaign_id}/events`
+Each unique event ID counts once. Arrival order and event timestamp do not affect counts. Unknown campaigns return zero counts with HTTP 200.
 
-Optional listing included. Use `limit` (1-1000, default 100) and `offset` (default 0), for example `/campaigns/cmp_summer_sale/events?limit=20&offset=0`. Results are sorted by timestamp ascending.
+### GET `/campaigns/{campaign_id}/events`
 
-## Tests and seed data
-
-Run `go test ./...` and `go test -race ./...`. The seed file is `starter/seed/events.json`; post its array to `/events` with a JSON-capable client.
-
-The debugging program is run from its directory:
+Optional event listing, sorted by timestamp ascending. `limit` defaults to 100 and accepts 1-1000; `offset` defaults to 0.
 
 ```text
-cd debugging
-go run -race . events.jsonl
-go run . events.jsonl
+http://localhost:8080/campaigns/cmp_summer_sale/events?limit=20&offset=0
 ```
 
-Both commands should match `expected_output.txt` exactly.
+### Root discovery
 
-## Verification note
+`GET /` returns the available endpoint paths as JSON.
 
-The implementation was written in this empty workspace, but Go was not installed in the execution environment, so the commands above could not be run here. `AI_USAGE.md` and `NOTES.md` record this limitation precisely.
+## Tests and verification
+
+```powershell
+go test ./...
+go test -race ./...
+go vet ./...
+go build ./...
+```
+
+Run the supplied debugging program from its directory:
+
+```powershell
+Push-Location debugging
+go run . events.jsonl
+go run -race . events.jsonl
+Pop-Location
+```
+
+Both outputs match `debugging/expected_output.txt`.

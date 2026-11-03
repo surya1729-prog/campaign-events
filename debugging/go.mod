@@ -1,3 +1,3 @@
-module campaign-events/debugging
+module eventstats
 
 go 1.22
