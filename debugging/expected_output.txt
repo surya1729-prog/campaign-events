@@ -1,0 +1,8 @@
+processed=6
+accepted=4
+duplicates=1
+invalid=1
+sent=1
+delivered=1
+opened=1
+clicked=1

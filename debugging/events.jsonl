@@ -1,0 +1,6 @@
+{"event_id":"evt-1","type":"sent"}
+{"event_id":"evt-2","type":"delivered"}
+{"event_id":"evt-3","type":"opened"}
+{"event_id":"evt-4","type":"clicked"}
+{"event_id":"evt-4","type":"clicked"}
+{"event_id":"broken","type":"unknown"}

@@ -1,0 +1,7 @@
+[
+  {"event_id":"evt_00001","campaign_id":"cmp_summer_sale","contact_id":"ct_001","type":"sent","timestamp":"2026-08-10T09:00:00Z"},
+  {"event_id":"evt_00002","campaign_id":"cmp_summer_sale","contact_id":"ct_001","type":"delivered","timestamp":"2026-08-10T09:00:08Z"},
+  {"event_id":"evt_00003","campaign_id":"cmp_summer_sale","contact_id":"ct_001","type":"opened","timestamp":"2026-08-10T09:15:04Z","metadata":{"url":"https://example.com/offer"}},
+  {"event_id":"evt_00004","campaign_id":"cmp_summer_sale","contact_id":"ct_001","type":"clicked","timestamp":"2026-08-10T09:16:00Z","metadata":{"url":"https://example.com/offer"}},
+  {"event_id":"evt_00004","campaign_id":"cmp_summer_sale","contact_id":"ct_001","type":"clicked","timestamp":"2026-08-10T09:16:00Z","metadata":{"url":"https://example.com/offer"}}
+]
